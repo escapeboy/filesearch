@@ -1,5 +1,6 @@
 <?php namespace FileSearch;
 
+use FileSearch\Models\Words;
 use Illuminate\Support\Collection;
 
 class Search {
@@ -13,13 +14,30 @@ class Search {
     {
         $this->path = realpath($path);
         $this->query = $query;
-        $this->_check_input();
+
         return $this;
     }
 
+    public function getDatabase()
+    {
+        $query_words = explode(' ', $this->query);
+        $result = new Collection();
+        foreach($query_words as $word){
+            $db_result = Words::with('file')
+                ->whereLength(strlen($word))
+                ->where('word', 'like', $word)
+                ->get();
+            $result = $result->merge($db_result);
+        }
+        foreach($result as $word){
+            $this->query_result[$word->file->name][$word->line] = file($word->file->name)[$word->line];
+        }
+        return new Collection($this->query_result);
+    }
 
     public function get()
     {
+        $this->_check_input();
         $this->_files();
         foreach($this->files as $file){
             $this->searchIn($file);

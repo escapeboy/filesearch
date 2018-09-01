@@ -20,7 +20,7 @@ class FileSearchController extends Controller
     {
         if($r->has('q')){
             $search = new Search($r->get('q'), app_path());
-            $this->data['items'] = $search->get();
+            $this->data['items'] = $search->getDatabase();
         }
         if($r->wantsJson() || $r->has('debug')){
             return response()->json($this->data['items']);
